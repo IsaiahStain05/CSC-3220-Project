@@ -1,1 +1,5 @@
-# CSC-3220-Census-Data-Income-Prediction
+# CSC-3220-Project
+
+predicting data from census data
+
+|_|
