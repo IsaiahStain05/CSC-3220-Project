@@ -14,3 +14,4 @@ adults[adults$class == " >50K", "class"] <- 1     # sets the class >50K to 1
 
 cols <- c("workclass", "education", "marital-status", "occupation", "relationship", "sex", "native-country", "class")
 adults[cols] <- lapply(adults[cols], function(x) ifelse(x == " ?", NA, x))
+adults <- drop_na(adults)
