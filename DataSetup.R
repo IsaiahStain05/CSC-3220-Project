@@ -19,9 +19,20 @@ adults <- drop_na(adults)
 
 #Education has the highest correlation. Age and hours per week have moderate correlation. Capital-loss has low correlation.
 nums <- adults[, sapply(adults, is.numeric)]
-
 corr_matrix <- cor(nums, use = "complete.obs")
-
 corr_with_income <- corr_matrix[, "class"]
 
 print(corr_with_income)
+
+#Display non-numeric correlations between income (>50k) and other census data
+non_numeric <- adults[, !sapply(adults, is.numeric)]
+dummy_vars <- model.matrix(~ . - 1, data = non_numeric)  # one-hot encode without intercept
+
+encoded_data <- cbind(dummy_vars, class = as.numeric(adults$class))
+
+cat_correlations <- cor(encoded_data, use = "complete.obs")[, "class"]
+
+cat_correlations_sorted <- sort(cat_correlations, decreasing = TRUE)
+
+cat("Correlations with income:\n")
+print(head(cat_correlations_sorted, 100))
