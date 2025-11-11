@@ -40,3 +40,5 @@ cat_correlations_sorted <- sort(cat_correlations, decreasing = TRUE)
 
 cat("Correlations with income:\n")
 print(head(cat_correlations_sorted, 100))
+
+# POSSIBLE NEXT STEPS: Convert capital-gain/capital-loss to categorical values
