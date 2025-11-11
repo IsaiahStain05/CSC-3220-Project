@@ -1,3 +1,5 @@
+# NOTE: Read the README.md file to ensure you have set up this workspace correctly!!
+
 install.packages("tidymodels")
 install.packages("ggplot2")
 install.packages("dplyr")
