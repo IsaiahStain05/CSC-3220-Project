@@ -41,4 +41,11 @@ cat_correlations_sorted <- sort(cat_correlations, decreasing = TRUE)
 cat("Correlations with income:\n")
 print(head(cat_correlations_sorted, 100))
 
+clean_cat_correlations_sorted <- cat_correlations_sorted[3:93]
+sample_corr_list <- c(head(clean_cat_correlations_sorted, 10), tail(clean_cat_correlations_sorted, 10))
+
+par(mar = c(4, 8, 4, 2))
+barplot(clean_cat_correlations_sorted, las=1, horiz=TRUE, cex.names = 0.2)
+barplot(sample_corr_list, las=2, horiz=TRUE, cex.names = 0.5, cex.axis = 0.8)
+
 # POSSIBLE NEXT STEPS: Convert capital-gain/capital-loss to categorical values
