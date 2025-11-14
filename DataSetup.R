@@ -48,4 +48,13 @@ par(mar = c(4, 8, 4, 2))
 barplot(clean_cat_correlations_sorted, las=1, horiz=TRUE, cex.names = 0.2)
 barplot(sample_corr_list, las=2, horiz=TRUE, cex.names = 0.5, cex.axis = 0.8)
 
-# POSSIBLE NEXT STEPS: Convert capital-gain/capital-loss to categorical values
+firstSplit <- initial_split(adults, prop=3/4)
+training <- training(firstSplit)
+test <- testing(firstSplit)
+
+logModel <- glm(class ~ ., family="binomial", data = training)
+pred_probs <- predict(logModel, newdata = test, type = "response")
+predicted <- pred_probs > 0.5
+mean(predicted == test$class)
+
+# rm(test, training, logModel, pred_probs, firstSplit, predicted) <- To remove all variables
