@@ -13,7 +13,25 @@ In this project, we will be analyzing census data from the 1994 United States Ce
 
 ### **2. Data and Exploratory Analysis**  
 
-The dataset we have been given has the following columns:  age, workclass (their employment status/employer), fnlwgt (the sampling weight – how many people are represented by the other statistics described in the row of this instance), education, education-num (a numerical representation of this instance’s education level), marital-status, occupation, relationship, race, sex, capital-gain (monetary gain through sale of assets), capital-loss (monetary loss through sale of assets), hours-per-week (worked), native-country, and class (whether the person(s) described by this row makes less than or equal to $50K annually, or more than $50K annually). One important thing to note is that in the original dataset, the NA values were not filled with NA, they were filled with “ ?”. Our first step was to convert these question marks into NA’s using lapply and an ifelse branch. Secondly, we realized that all of our NA values were in columns that contained categorical values, not numerical. For this reason, and the fact that our dataset is very large, we chose to simply drop the NA values instead of imputing data into them.  The only data that we generated (or transformed, more so), was our class column. Instead of having the char datatype categories “<= $50K” and “>$50K”, we converted these values to FALSE and TRUE logical values respectively. This dataset has many outliers, however, for the most part these outliers are not errors – they are simply natural outcomes of capitalism.  This dataset does seem to max out at $99,999 for values that may possibly be greater than $99,999 in the “capital-gain” column. After cleaning our data, we created a correlation matrix to see which factors tended to affect the probability an instance being “class = TRUE” (the person represented by the data makes more than $50K a year). We found that the three most impactful coefficient correlations were: marital-status = Married-civ-spouse (+0.445), marital-status = Never-married (-0.32), and relationship = Own-child (-0.226). Here is the full correlation graph:  
+The dataset we have been given has the following columns:  
+| Column Name    | Description |
+| -----------    | ----------- |
+| age            | Age of the people described in this row |
+| workclass      | Their employment status/employer|
+| fnlwgt         | The sampling weight – how many people are represented by the other statistics described in this row |
+| education      | Education level of the people described in this row |
+| education-num  | A numerical representation of this row’s education level |
+| marital-status | Marital status and if their spouse is in the military |
+| occupation     | What they do for work |
+| relationship   | What are they in their family |
+| race           | What race are they |
+| sex            | What is their sex |
+| capital-gain   | Monetary gain through sale of assets |
+| capital-loss   | Monetary loss through sale of assets |
+| hours-per-week | How many hours worked in a week |
+| native-country | What country are they from |
+| class          | Whether the people described by this row make less than or equal to $50K annually, or more than $50K annually |  
+One important thing to note is that in the original dataset, the NA values were not filled with NA, they were filled with “ ?”. Our first step was to convert these question marks into NA’s using lapply and an ifelse branch. Secondly, we realized that all of our NA values were in columns that contained categorical values, not numerical. For this reason, and the fact that our dataset is very large, we chose to simply drop the NA values instead of imputing data into them.  The only data that we generated (or transformed, more so), was our class column. Instead of having the char datatype categories “<= $50K” and “>$50K”, we converted these values to FALSE and TRUE logical values respectively. This dataset has many outliers, however, for the most part these outliers are not errors – they are simply natural outcomes of capitalism.  This dataset does seem to max out at $99,999 for values that may possibly be greater than $99,999 in the “capital-gain” column. After cleaning our data, we created a correlation matrix to see which factors tended to affect the probability an instance being “class = TRUE” (the person represented by the data makes more than $50K a year). We found that the three most impactful coefficient correlations were: marital-status = Married-civ-spouse (+0.445), marital-status = Never-married (-0.32), and relationship = Own-child (-0.226). Here is the full correlation graph:  
   
 <img src="Graphs/hard_to_read.png" width="800" height="800">  
   
