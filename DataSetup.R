@@ -3,9 +3,16 @@
 install.packages("tidymodels")
 install.packages("ggplot2")
 install.packages("dplyr")
+install.packages("randomForest")
+install.packages("xgboost")
 library(tidymodels)
 library(ggplot2)
 library(dplyr)
+library(randomForest)
+library(xgboost)
+
+
+set.seed(200)
 
 adults <- read.csv("./dataset/adult.data")
 colnames(adults) <- c("age", "workclass", "fnlwgt", "education", "education-num", "marital-status", "occupation", "relationship", "race", "sex", "capital-gain", "capital-loss", "hours-per-week", "native-country", "class")
@@ -52,9 +59,39 @@ firstSplit <- initial_split(adults, prop=3/4)
 training <- training(firstSplit)
 test <- testing(firstSplit)
 
-logModel <- glm(class ~ ., family="binomial", data = training)
-pred_probs <- predict(logModel, newdata = test, type = "response")
-predicted <- pred_probs > 0.5
-mean(predicted == test$class)
+training$class <- as.factor(training$class)
+test$class <- as.factor(test$class)
 
-# rm(test, training, logModel, pred_probs, firstSplit, predicted) <- To remove all variables
+# Logistic model implementation
+logModel <- glm(class ~ ., family="binomial", data = training)
+pred_probs <- predict(logModel, newdata = test, type = "response") |> bind_cols(test)
+pred_probs$.pred_class <- pred_probs$...1 > 0.5
+pred_probs$.pred_class <- as.factor(pred_probs$.pred_class)
+
+#Random forest model implementation
+adults_recipe <- recipe(class ~ ., data = training) |> step_dummy(all_nominal_predictors())
+adultRFModel <- rand_forest(mode="classification", engine="randomForest", mtry = 9, min_n = 1)
+adults_workflow <- workflow() |> add_model(adultRFModel) |> add_recipe(adults_recipe)
+adult_RfFit <- adults_workflow |> fit(data = training)
+predictions <- predict(adult_RfFit, new_data = test, type = "prob") |> bind_cols(predict(adult_RfFit, new_data = test)) |> bind_cols(test)
+
+# XGBoost model implementation
+adult_boost_model <- boost_tree(mode="classification", engine="xgboost", trees=100)
+adult_xg_fit <- adult_boost_model |> fit(class ~ ., data = training)
+pred_xg <- predict(adult_xg_fit, new_data = test, type="class") |> bind_cols(predict(adult_xg_fit, new_data = test, type="prob")) |> bind_cols(test)
+
+
+log_auc <- roc_auc(pred_probs, truth = class, ...1, event_level = "second")
+log_acc <- mean(pred_probs$.pred_class == test$class)
+log_prec <- precision(pred_probs, truth = class, estimate = .pred_class)
+
+rf_auc <- roc_auc(predictions, truth = class, .pred_TRUE, event_level = "second")
+rf_acc <- mean(predictions$.pred_class == predictions$class)
+rf_prec <- precision(predictions, truth = class, estimate = .pred_class)
+
+xg_auc <- roc_auc(pred_xg, truth = class, .pred_TRUE, event_level = "second")
+xg_acc <- mean(pred_xg$.pred_class == pred_xg$class)
+xg_prec <- precision(pred_xg, truth = class, estimate = .pred_class)
+
+# rm(adults_workflow, adultRFModel, adults_recipe, test, training, firstSplit, adult_RfFit, predictions) <- remove all variables for the random forest
+# rm(test, training, logModel, pred_probs, firstSplit, predicted) <- To remove all variables for the log model
