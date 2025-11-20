@@ -23,7 +23,7 @@ The dataset we have been given has the following columns:
 | education-num  | A numerical representation of this row’s education level |
 | marital-status | Marital status and if their spouse is in the military |
 | occupation     | What they do for work |
-| relationship   | What are they in their family |
+| relationship   | What are they in their family (in relation to the head of the household) |
 | race           | What race are they |
 | sex            | What is their sex |
 | capital-gain   | Monetary gain through sale of assets |
