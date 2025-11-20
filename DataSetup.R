@@ -7,6 +7,8 @@ install.packages("randomForest")
 install.packages("xgboost")
 install.packages("discrim")
 install.packages("naivebayes")
+install.packages("caret")
+install.packages("cvms")
 library(tidymodels)
 library(ggplot2)
 library(dplyr)
@@ -14,6 +16,8 @@ library(randomForest)
 library(xgboost)
 library(discrim)
 library(naivebayes)
+library(caret)
+library(cvms)
 
 
 set.seed(200)
@@ -67,23 +71,24 @@ training$class <- as.factor(training$class)
 test$class <- as.factor(test$class)
 
 # Logistic model implementation
-logModel <- glm(class ~ ., family="binomial", data = training)
-pred_probs <- predict(logModel, newdata = test, type = "response") |> bind_cols(test)
-pred_probs$.pred_class <- pred_probs$...1 > 0.5
-pred_probs$.pred_class <- as.factor(pred_probs$.pred_class)
+# logModel <- glm(class ~ ., family="binomial", data = training)
+# pred_probs <- predict(logModel, newdata = test, type = "response") |> bind_cols(test)
+# pred_probs$.pred_class <- pred_probs$...1 > 0.5
+# pred_probs$.pred_class <- as.factor(pred_probs$.pred_class)
 
 #Random forest model implementation
-adults_recipe <- recipe(class ~ ., data = training) |> step_dummy(all_nominal_predictors())
-adultRFModel <- rand_forest(mode="classification", engine="randomForest", mtry = 9, min_n = 1)
-adults_workflow <- workflow() |> add_model(adultRFModel) |> add_recipe(adults_recipe)
-adult_RfFit <- adults_workflow |> fit(data = training)
-predictions <- predict(adult_RfFit, new_data = test, type = "prob") |> bind_cols(predict(adult_RfFit, new_data = test)) |> bind_cols(test)
+# adults_recipe <- recipe(class ~ ., data = training) |> step_dummy(all_nominal_predictors())
+# adultRFModel <- rand_forest(mode="classification", engine="randomForest", mtry = 9, min_n = 1)
+# adults_workflow <- workflow() |> add_model(adultRFModel) |> add_recipe(adults_recipe)
+# adult_RfFit <- adults_workflow |> fit(data = training)
+# predictions <- predict(adult_RfFit, new_data = test, type = "prob") |> bind_cols(predict(adult_RfFit, new_data = test)) |> bind_cols(test)
 
 # XGBoost model implementation
 adult_boost_model <- boost_tree(mode="classification", engine="xgboost", trees=100)
 adult_xg_fit <- adult_boost_model |> fit(class ~ ., data = training)
 pred_xg <- predict(adult_xg_fit, new_data = test, type="class") |> bind_cols(predict(adult_xg_fit, new_data = test, type="prob")) |> bind_cols(test)
 
+# Naive Bayes Implementation and Testing
 adult_nb_model <- naive_Bayes(mode="classification", engine="naivebayes", smoothness = 1)
 adult_nb_wf <- workflow() |> add_model(adult_nb_model) |> add_recipe(adults_recipe)
 adult_nb_fit <- fit(adult_nb_wf, data = training)
@@ -91,19 +96,37 @@ nb_pred_class <- predict(adult_nb_fit, new_data = test, type = "class") |> bind_
 nb_pred_probs <- predict(adult_nb_fit, new_data = test, type = "prob") |> bind_cols(test)
 nb_f1 <- f_meas(nb_pred_class, truth = class, estimate = .pred_class, beta = 1)
 nb_auc <- roc_auc(nb_pred_probs, truth = class, .pred_TRUE, event_level = "second")
+nb_conf_matrix <- confusionMatrix(data=nb_pred_class$.pred_class, reference = nb_pred_class$class)
 
-log_auc <- roc_auc(pred_probs, truth = class, ...1, event_level = "second")
-log_acc <- mean(pred_probs$.pred_class == test$class)
-log_prec <- precision(pred_probs, truth = class, estimate = .pred_class)
-
-rf_auc <- roc_auc(predictions, truth = class, .pred_TRUE, event_level = "second")
-rf_acc <- mean(predictions$.pred_class == predictions$class)
-rf_prec <- precision(predictions, truth = class, estimate = .pred_class)
-
+# log_auc <- roc_auc(pred_probs, truth = class, ...1, event_level = "second")
+# log_acc <- mean(pred_probs$.pred_class == test$class)
+# log_prec <- precision(pred_probs, truth = class, estimate = .pred_class)
+# 
+# rf_auc <- roc_auc(predictions, truth = class, .pred_TRUE, event_level = "second")
+# rf_acc <- mean(predictions$.pred_class == predictions$class)
+# rf_prec <- precision(predictions, truth = class, estimate = .pred_class)
+  
 xg_auc <- roc_auc(pred_xg, truth = class, .pred_TRUE, event_level = "second")
 xg_acc <- mean(pred_xg$.pred_class == pred_xg$class)
 xg_prec <- precision(pred_xg, truth = class, estimate = .pred_class)
 xg_f1 <- f_meas(pred_xg, truth = class, estimate = .pred_class, beta = 1)
+xg_conf_matrix <- confusionMatrix(data=pred_xg$.pred_class, reference = pred_xg$class)
+
+xg_conf_matrix <- as.data.frame(xg_conf_matrix$table)
+xg_conf_matrix$Target <- xg_conf_matrix$Reference
+xg_conf_matrix$N <- xg_conf_matrix$Freq
+
+nb_conf_matrix <- as.data.frame(nb_conf_matrix$table)
+nb_conf_matrix$Target <- nb_conf_matrix$Reference
+nb_conf_matrix$N <- nb_conf_matrix$Freq
+
+plot_confusion_matrix(xg_conf_matrix) + ggtitle("XGBoost Confusion Matrix")
+plot_confusion_matrix(nb_conf_matrix) + ggtitle("Naive Bayes Confusion Matrix")
+
+xg_pr_curve <- pr_curve(pred_xg, truth = class, .pred_TRUE, event_level = "second")
+autoplot(xg_pr_curve) + ggtitle("Precision/Recall Curve for XGBoost")
+
+ggplot(pred_xg, aes(x=.pred_TRUE, fill=class)) + geom_density(alpha=0.4) + labs(title = "Predicted Probability Distribution", x = "Predicted Probability Income >$50K", y = "Density")
 
 # rm(adults_workflow, adultRFModel, adults_recipe, test, training, firstSplit, adult_RfFit, predictions) <- remove all variables for the random forest
 # rm(test, training, logModel, pred_probs, firstSplit, predicted) <- To remove all variables for the log model
