@@ -5,11 +5,15 @@ install.packages("ggplot2")
 install.packages("dplyr")
 install.packages("randomForest")
 install.packages("xgboost")
+install.packages("discrim")
+install.packages("naivebayes")
 library(tidymodels)
 library(ggplot2)
 library(dplyr)
 library(randomForest)
 library(xgboost)
+library(discrim)
+library(naivebayes)
 
 
 set.seed(200)
@@ -80,6 +84,13 @@ adult_boost_model <- boost_tree(mode="classification", engine="xgboost", trees=1
 adult_xg_fit <- adult_boost_model |> fit(class ~ ., data = training)
 pred_xg <- predict(adult_xg_fit, new_data = test, type="class") |> bind_cols(predict(adult_xg_fit, new_data = test, type="prob")) |> bind_cols(test)
 
+adult_nb_model <- naive_Bayes(mode="classification", engine="naivebayes", smoothness = 1)
+adult_nb_wf <- workflow() |> add_model(adult_nb_model) |> add_recipe(adults_recipe)
+adult_nb_fit <- fit(adult_nb_wf, data = training)
+nb_pred_class <- predict(adult_nb_fit, new_data = test, type = "class") |> bind_cols(test)
+nb_pred_probs <- predict(adult_nb_fit, new_data = test, type = "prob") |> bind_cols(test)
+nb_f1 <- f_meas(nb_pred_class, truth = class, estimate = .pred_class, beta = 1)
+nb_auc <- roc_auc(nb_pred_probs, truth = class, .pred_TRUE, event_level = "second")
 
 log_auc <- roc_auc(pred_probs, truth = class, ...1, event_level = "second")
 log_acc <- mean(pred_probs$.pred_class == test$class)
@@ -92,6 +103,7 @@ rf_prec <- precision(predictions, truth = class, estimate = .pred_class)
 xg_auc <- roc_auc(pred_xg, truth = class, .pred_TRUE, event_level = "second")
 xg_acc <- mean(pred_xg$.pred_class == pred_xg$class)
 xg_prec <- precision(pred_xg, truth = class, estimate = .pred_class)
+xg_f1 <- f_meas(pred_xg, truth = class, estimate = .pred_class, beta = 1)
 
 # rm(adults_workflow, adultRFModel, adults_recipe, test, training, firstSplit, adult_RfFit, predictions) <- remove all variables for the random forest
 # rm(test, training, logModel, pred_probs, firstSplit, predicted) <- To remove all variables for the log model
