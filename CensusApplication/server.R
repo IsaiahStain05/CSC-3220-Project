@@ -7,10 +7,10 @@ server <- function(input, output, session) {
     colnames(new_adult) <- c("age", "workclass", "fnlwgt", "education", "education-num", "marital-status", "occupation", "relationship", "race", "sex", "capital-gain", "capital-loss", "hours-per-week", "native-country")
     predicted_class <- predict(xg_model, new_data = new_adult) |> bind_cols(new_adult)
     output$prediction_result <- renderText({
-      if (as.logical(predicted_class$.pred_class)) {
-        paste("Predicted income class: Makes less than or equal to $50K per Year")
-      }else{
+      if (predicted_class$.pred_class == "TRUE") {
         paste("Predicted income class: Makes more than $50K per Year")
+      }else{
+        paste("Predicted income class: Makes less than or equal to $50K per Year")
       }
     })
   })
