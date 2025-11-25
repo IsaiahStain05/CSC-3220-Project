@@ -130,3 +130,165 @@ ggplot(pred_xg, aes(x=.pred_TRUE, fill=class)) + geom_density(alpha=0.4) + labs(
 
 # rm(adults_workflow, adultRFModel, adults_recipe, test, training, firstSplit, adult_RfFit, predictions) <- remove all variables for the random forest
 # rm(test, training, logModel, pred_probs, firstSplit, predicted) <- To remove all variables for the log model
+
+xg_probs  <- pred_xg  %>% select(class, .pred_TRUE) %>% mutate(model = "XGBoost")
+nb_probs  <- nb_pred_probs %>% select(class, .pred_TRUE) %>% mutate(model = "Naive Bayes")
+all_probs <- bind_rows(xg_probs, nb_probs)
+ggplot(all_probs, aes(x = .pred_TRUE, fill = class)) +
+geom_density(alpha = 0.3) +
+facet_wrap(~ model) +
+scale_fill_manual(values = c("FALSE" = "gray60", "TRUE" = "darkred")) +
+labs(
+title = "Predicted Probability Distributions (XGBoost vs Naive Bayes)",
+x = "Predicted P(Income >50K)",
+y = "Density",
+fill = "True Class"
+) +
+theme_minimal()
+summary(pred_xg$.pred_TRUE)
+unique(pred_xg$.pred_TRUE)
+table(pred_xg$.pred_TRUE)
+summary(nb_pred_probs$.pred_TRUE)
+unique(nb_pred_probs$.pred_TRUE)
+table(nb_pred_probs$.pred_TRUE)
+ggplot(nb_pred_probs, aes(x = .pred_TRUE, fill = class)) +
+geom_histogram(binwidth = 0.05, alpha = 0.5, position = "identity") +
+scale_fill_manual(values = c("FALSE" = "gray60", "TRUE" = "darkred"),
+labels = c("<=50K", ">50K")) +
+labs(
+title = "Predicted Probability Histogram – Naive Bayes",
+x = "Predicted P(Income >50K)",
+y = "Count"
+) +
+theme_minimal()
+table(nb_pred_probs$.pred_TRUE)
+# Cross-tab with the true class:
+table(PredProbs = nb_pred_probs$.pred_TRUE, TrueClass = nb_pred_probs$class)
+table(PredProbs, TrueClass)
+library(dplyr)
+library(ggplot2)
+# Prepare probability columns for each model
+xg_probs <- pred_xg %>%
+select(class, .pred_TRUE) %>%
+mutate(model = "XGBoost")
+
+nb_probs <- nb_pred_probs %>%
+select(class, .pred_TRUE) %>%
+mutate(model = "Naive Bayes")
+# Combine into one dataset
+all_probs <- bind_rows(xg_probs, nb_probs)
+# Side-by-side comparison
+ggplot(all_probs, aes(x = .pred_TRUE, fill = class)) +
+geom_histogram(binwidth = 0.05, alpha = 0.5, position = "identity") +
+facet_wrap(~ model, ncol = 2) +
+scale_fill_manual(
+values = c("FALSE" = "gray70", "TRUE" = "darkred"),
+labels = c("<=50K", ">50K")
+) +
+labs(
+title = "Predicted Probability Distributions (XGBoost vs Naive Bayes)",
+x = "Predicted P(Income >50K)",
+y = "Count",
+fill = "True Class"
+) +
+theme_minimal()
+# ROC data for each model
+xg_roc <- roc_curve(pred_xg,
+truth = class,
+.pred_TRUE,
+event_level = "second") %>%
+event_level = "second") %>%
+mutate(model = "XGBoost")
+nb_roc <- roc_curve(nb_pred_probs,
+truth = class,
+.pred_TRUE,
+event_level = "second") %>%
+mutate(model = "Naive Bayes")
+# Combine for plotting
+both_roc <- bind_rows(xg_roc, nb_roc)
+ggplot(both_roc,
+aes(x = 1 - specificity, y = sensitivity, color = model)) +
+geom_path(linewidth = 1) +
+geom_abline(slope = 1, intercept = 0, linetype = "dashed") +
+coord_equal() +
+labs(
+title = "ROC Curves – XGBoost vs Naive Bayes",
+x = "False Positive Rate (1 - Specificity)",
+y = "True Positive Rate (Sensitivity)",
+color = "Model"
+) +
+theme_minimal()
+library(tidymodels)
+library(ggplot2)
+xg_conf <- conf_mat(
+pred_xg,
+truth = class,
+estimate = .pred_class
+)
+autoplot(xg_conf, type = "heatmap") +
+scale_fill_gradient(low = "white", high = "steelblue") +
+ggtitle("Confusion Matrix – XGBoost") +
+theme_minimal()
+nb_conf <- conf_mat(
+nb_pred_class,
+truth = class,
+estimate = .pred_class
+)
+autoplot(nb_conf, type = "heatmap") +
+scale_fill_gradient(low = "white", high = "darkred") +
+ggtitle("Confusion Matrix – Naive Bayes") +
+theme_minimal()
+library(patchwork)
+p_xg <- autoplot(xg_conf, type = "heatmap") +
+scale_fill_gradient(low = "white", high = "steelblue") +
+ggtitle("XGBoost") +
+theme_minimal()
+p_nb <- autoplot(nb_conf, type = "heatmap") +
+scale_fill_gradient(low = "white", high = "darkred") +
+ggtitle("Naive Bayes") +
+theme_minimal()
+p_xg + p_nb   # <-- side-by-side output
+xg_metrics <- metrics(pred_xg, truth = class, estimate = .pred_class)
+nb_metrics <- metrics(nb_pred_class, truth = class, estimate = .pred_class)
+xg_metrics
+nb_metrics
+# XGBoost confusion matrix
+xg_conf <- conf_mat(pred_xg, truth = class, estimate = .pred_class)
+# Naive Bayes confusion matrix
+nb_conf <- conf_mat(nb_pred_class, truth = class, estimate = .pred_class)
+# Define the metrics you want
+my_metrics <- metric_set(accuracy, sens, spec, precision, f_meas)
+# Compute metrics for each model
+xg_metrics <- my_metrics(pred_xg, truth = class, estimate = .pred_class)
+nb_metrics <- my_metrics(nb_pred_class, truth = class, estimate = .pred_class)
+xg_metrics
+nb_metrics
+## ---- XGBOOST ----
+xg_mat <- as.matrix(xg_conf)
+TN_xg <- xg_mat["FALSE", "FALSE"]
+## ---- XGBOOST ----
+xg_mat <- as.matrix(xg_conf)
+TN_xg <- xg_mat["FALSE", "FALSE"]
+TN_xg <- xg_mat[1, 1]
+FP_xg <- xg_mat[2, 1]
+xg_mat <- as.matrix(xg_conf$table)
+nb_mat <- as.matrix(nb_conf$table)
+xg_mat
+nb_mat
+rownames(xg_mat)
+colnames(xg_mat)
+library(xgboost)
+# extract native xgboost model from parsnip fit
+xgb_model <- adult_xg_fit$fit
+# compute importance
+xgb_imp <- xgb.importance(model = xgb_model)
+# plot top 20 features
+xgb.plot.importance(xgb_imp, top_n = 20, measure = "Gain")
+install.packages("vip")
+library(vip)
+vip(adult_xg_fit$fit, num_features = 10, geom = "point")
+library(pdp)
+install.packages("pdp")
+library(pdp)
+pdp_age <- partial(adult_xg_fit$fit, pred.var = "age", prob = TRUE)
+
