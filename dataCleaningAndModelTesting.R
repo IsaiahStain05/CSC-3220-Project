@@ -77,7 +77,7 @@ test$class <- as.factor(test$class)
 # pred_probs$.pred_class <- as.factor(pred_probs$.pred_class)
 
 #Random forest model implementation
-# adults_recipe <- recipe(class ~ ., data = training) |> step_dummy(all_nominal_predictors())
+adults_recipe <- recipe(class ~ ., data = training) |> step_dummy(all_nominal_predictors())
 # adultRFModel <- rand_forest(mode="classification", engine="randomForest", mtry = 9, min_n = 1)
 # adults_workflow <- workflow() |> add_model(adultRFModel) |> add_recipe(adults_recipe)
 # adult_RfFit <- adults_workflow |> fit(data = training)
@@ -100,15 +100,15 @@ nb_conf_matrix <- confusionMatrix(data=nb_pred_class$.pred_class, reference = nb
 
 # log_auc <- roc_auc(pred_probs, truth = class, ...1, event_level = "second")
 # log_acc <- mean(pred_probs$.pred_class == test$class)
-# log_prec <- precision(pred_probs, truth = class, estimate = .pred_class)
+# log_prec <- yardstick::precision(pred_probs, truth = class, estimate = .pred_class)
 # 
 # rf_auc <- roc_auc(predictions, truth = class, .pred_TRUE, event_level = "second")
 # rf_acc <- mean(predictions$.pred_class == predictions$class)
-# rf_prec <- precision(predictions, truth = class, estimate = .pred_class)
+# rf_prec <- yardstick::precision(predictions, truth = class, estimate = .pred_class)
   
 xg_auc <- roc_auc(pred_xg, truth = class, .pred_TRUE, event_level = "second")
 xg_acc <- mean(pred_xg$.pred_class == pred_xg$class)
-xg_prec <- precision(pred_xg, truth = class, estimate = .pred_class)
+xg_prec <- yardstick::precision(pred_xg, truth = class, estimate = .pred_class)
 xg_f1 <- f_meas(pred_xg, truth = class, estimate = .pred_class, beta = 1)
 xg_conf_matrix <- confusionMatrix(data=pred_xg$.pred_class, reference = pred_xg$class)
 
