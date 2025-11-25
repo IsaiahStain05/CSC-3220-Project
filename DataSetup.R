@@ -140,8 +140,8 @@ y = "Count"
 theme_minimal()
 table(nb_pred_probs$.pred_TRUE)
 # Cross-tab with the true class:
-table(PredProb = nb_pred_probs$.pred_TRUE, TrueClass = nb_pred_probs$class)
-table(PredProb, TrueClass)
+table(PredProbs = nb_pred_probs$.pred_TRUE, TrueClass = nb_pred_probs$class)
+table(PredProbs, TrueClass)
 library(dplyr)
 library(ggplot2)
 # Prepare probability columns for each model
