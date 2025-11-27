@@ -6,8 +6,57 @@ library(tidyverse)
 
 ui <- fluidPage(
   titlePanel("Income Class Predictor"),
+  tags$style(HTML("
+    .flex-side{
+      height: 90vh;
+      overflow-y: auto;
+    }
+    .move-up {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+      animation: moveUp 1s ease-out forwards;
+      background-color: rgba(18, 255, 18, 0.85);
+      text-align: center;
+      font-weight: bold;
+      font-size: 40px;
+      height: 90vh;
+      width: 60vw;
+      padding: 10px;
+      border: 10px groove black;
+      font-family: 'Times New Roman';
+    }
+    @keyframes moveUp {
+      0% { transform: translateY(20px); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(0px); opacity: 1; }
+    }
+    .move-down {
+      display: flex;
+      flex: 1;
+      justify-content: center;
+      align-items: center;
+      animation: moveDown 1s ease-out forwards;
+      background-color: rgba(255, 12, 12, 0.85);
+      font-weight: bold;
+      text-align: center;
+      font-size: 40px;
+      height: 90vh;
+      width: 60vw;
+      padding: 10px;
+      border: 10px groove black;
+      font-family: 'Times New Roman';
+    }
+    @keyframes moveDown {
+      0% { transform: translateY(-20px); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(0px); opacity: 1; }
+    }
+  ")),
   sidebarLayout(
     sidebarPanel(
+      class = "flex-side",
       numericInput("age", "Age", value=25, min=0, max=100),
       selectInput("workclass", "Working Class", c(" Self-emp-not-inc", " Private", " State-gov", " Federal-gov", " Local-gov", " Self-emp-inc", " Without-pay", " Never-worked")),
       numericInput("fnlwgt", "How many people are represented by this data?", value=0),
@@ -25,7 +74,7 @@ ui <- fluidPage(
       actionButton("predict", "Predict Income Class")
     ),
     mainPanel(
-      textOutput("prediction_result")
+      uiOutput("prediction_result")
     )
   )
 )
