@@ -28,9 +28,9 @@ ui <- fluidPage(
       font-family: 'Times New Roman';
     }
     @keyframes moveUp {
-      0% { transform: translateY(20px); opacity: 0; }
-      50% { opacity: 1; }
-      100% { transform: translateY(0px); opacity: 1; }
+        0% { transform: translateY(20px); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(0px); opacity: 1; }
     }
     .move-down {
       display: flex;
